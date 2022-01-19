@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}
+Add Items 
+{% endblock %}
+{% block body %}
+<div class="header-div">
+    <h1> Add Items </h1>
+</div>
+
+<div class="body">
+    <form id="add-form" method=post action="/add">
+        <label> Item Name </label>
+        <input type="text" name="name" required> </input> 
+        <label> Item Amount </label>
+        <input type="number" name="amount" min=0 required> </input> 
+        <label> Item Description </label>
+        <textarea name="description" cols="30" rows="10" required></textarea>
+        <label> Item Warehouse </label>
+        <select name="warehouse" > 
+            <option></option>
+            {% for item in warehouses%}
+            <option value={{item[0]}}>{{item[1]}}</option>
+            {% endfor %}
+        </select>
+        <input class="submit-btn" type=submit value="Add Item">
+    </form>
+</div>
+
+{% endblock %}

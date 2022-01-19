@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block js %}{% endblock %}
+
+{% block title %}
+    Shopify Backend Challenge 2022
+{% endblock %}
+
+{% block body %}
+<div class="header-div">
+    <h1> View All Items </h1>
+</div>
+
+<div class="body">
+    {% for warehouse in list%}
+        <div class="warehouse-div"> 
+            {%if warehouse%}
+                <h2 class="warehouse-name"> {{warehouse}}</h2>
+            {% else %}
+                <h2 class="warehouse-name"> No Warehouse </h2>
+            {%endif%}
+            {% for item in list[warehouse] %}
+            <div class="info">
+                <h4 class="item-name">{{item[1]}}</h4>
+                <p class="item-info"> Amount: {{item[2]}}</p>
+                <p class="item-info"> {{item[3]}}<p>
+                <form id="edit-form" method=get action="/edit">
+                    <input type="hidden" name="id" value={{item[0]}}/>
+                    <input class="submit-btn" type=submit value="Edit Item">
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

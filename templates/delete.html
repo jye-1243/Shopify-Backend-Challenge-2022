@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block js %}
+{% endblock %}
+
+{% block title %}
+Delete Items
+{% endblock %}
+{% block body %}
+<div class="header-div">
+    <h1> Delete Items </h1>
+</div>
+
+<div class="body">
+    <form method="post">
+        <input class="submit-btn" type=submit value=Delete />
+        {% for item in records%}
+        <div class="form-block">
+            <label class="delete-label" for="{{item[0]}}-checkbox">
+                <input class="delete-selector" type="checkbox" name="deletes" value="{{item[0]}}" id="{{item[0]}}-checkbox" />
+                <h4>{{item[0]}}</h4>
+            </label>
+        </div>
+        {% endfor %}
+
+    </form>
+</div>
+
+{% endblock %}
