@@ -7,23 +7,29 @@ Edit Items
 <div class="header-div">
     <h1>Edit Items</h1>
 </div>
-<form id="edit-form" method=post action="/edit">
-    <input type="hidden" value={{data[0]}} name="id"/>
-    <input type="text" name="name" required value={{data[1]}}> </input> 
-    <input type="number" name="amount" min=0 required value={{data[2]}}> </input> 
-    <textarea name="description" cols="30" rows="10" required>{{data[3]}}</textarea>
-    <select name="warehouse" > 
-        <option></option>
-        {% for item in warehouses%}
-            {% if item[0] == data[4]%}
-                <option value={{item[0]}} selected>{{item[1]}}</option>
-            {% else %}
-                <option value={{item[0]}}>{{item[1]}}</option>
-            {% endif %}
-        {% endfor %}
-    </select>
-    <input id="edit-btn" type=submit value="Edit Item">
-</form>
 
+<div class="body">
+    <form id="edit-form" method=post action="/edit">
+        <input type="hidden" value={{data[0]}} name="id"/>
+        <label> Item Name </label>
+        <input type="text" name="name" required value={{data[1]}}> </input> 
+        <label> Item Amount </label>
+        <input type="number" name="amount" min=0 required value={{data[2]}}> </input> 
+        <label> Item Description </label>
+        <textarea name="description" cols="30" rows="10" required>{{data[3]}}</textarea>
+        <label> Item Warehouse </label>
+        <select name="warehouse" > 
+            <option></option>
+            {% for item in warehouses%}
+                {% if item[0] == data[4]%}
+                    <option value={{item[0]}} selected>{{item[1]}}</option>
+                {% else %}
+                    <option value={{item[0]}}>{{item[1]}}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+        <input id="submit-btn" type=submit value="Save Item">
+    </form>
+</div>
 
 {% endblock %}

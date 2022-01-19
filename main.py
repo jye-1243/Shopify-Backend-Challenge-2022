@@ -3,26 +3,31 @@ import sqlite3 as sql
 
 DATABASE = 'database.db'
 
+# Initialize app
 app = Flask(__name__)
 app.secret_key = '12345654321'
+
+# Function to get database
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sql.connect(DATABASE)
     return db
 
+# Close database when closing app
 @app.teardown_appcontext
 def close_connection(exception):
     db = getattr(g, '_database', None)
     if db is not None:
         db.close()
 
+# Default views items by warehouse
 @app.route('/')
 def index():
     db = get_db()
     cursor = db.cursor()
 
-    # Modify search_query based on if search exists
+    # Search query for all warehouses and entries
     sqlite_query = """SELECT id, title, quantity, descript, warehouses.warehouse_id, warehouse_name, warehouse_address FROM entries
                     LEFT JOIN warehouses ON entries.warehouse_id = warehouses.warehouse_id"""
     cursor.execute(sqlite_query)
@@ -31,13 +36,18 @@ def index():
     entries = cursor.fetchall()
     records = {}
 
+    # Create dictionary where each key is each warehouse
+    # Separate out everything by warehouse
+    # Could have used ORDER BY in the SQL Query, but this way with the keys is probably easier to handle on the frontend display
     for entry in entries:
         warehouse = entry[5]
         records[warehouse] = records.get(entry[5], [])
         records[warehouse].append(entry)
 
+    # Render index template
     return render_template("index.html", list=records)
 
+# Route to add an item into the database
 @app.route('/add',  methods=['GET', 'POST'])
 def add():
     db = get_db()
@@ -45,30 +55,35 @@ def add():
 
     # POST request
     if request.method == 'POST':
-        # Convert data into tuple format
+        # Convert data from form into tuple format
         name = request.form.get('name')
         amount = request.form.get('amount')
         description = request.form.get('description')
-        data_tuple = (name, amount, description,)
+        warehouse = request.form.get('warehouse')
+        data_tuple = (name, amount, description, warehouse)
 
-        # Modify search_query based on if search exists
-        check_query = """SELECT title FROM entries WHERE title=? """
-        cursor.execute(check_query, (name,))
+        # Query database to see if an item already exists in the database
+        # Should only have one entry per time per warehouse
+        check_query = """SELECT title FROM entries WHERE title=? AND warehouse_id=? """
+        cursor.execute(check_query, (name, warehouse ))
 
         # Get database query results
         entry = cursor.fetchone()
+        # If no entry already exists in the database, insert it
         if not entry:
-            sqlite_insert_query = """ INSERT INTO entries (title, quantity, descript) VALUES (?, ?, ?)"""
+            sqlite_insert_query = """ INSERT INTO entries (title, quantity, descript, warehouse_id) VALUES (?, ?, ?, ?)"""
 
             # Insert into database
             cursor.execute(sqlite_insert_query, data_tuple)
 
             db.commit()
+        # Error message
         else: 
             flash("Item already exists")
-
+        # Redirect to main page
         return redirect(url_for('index'))
 
+    # Get warehouse info for dropdown and render add template
     query = """SELECT warehouse_id, warehouse_name FROM warehouses"""
     cursor.execute(query)
     warehouses = cursor.fetchall()
