@@ -18,7 +18,11 @@ Delete Items
         <div class="form-block">
             <label class="delete-label" for="{{item[0]}}-checkbox">
                 <input class="delete-selector" type="checkbox" name="deletes" value="{{item[0]}}" id="{{item[0]}}-checkbox" />
-                <h4>{{item[0]}}</h4>
+                {% if item[1] %}
+                    <h4>{{item[0]}}, {{item[1]}}</h4>
+                {%else%}
+                <h4>{{item[0]}}, Not in Warehouse</h4>
+                {% endif %}
             </label>
         </div>
         {% endfor %}

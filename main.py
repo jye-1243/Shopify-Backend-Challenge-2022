@@ -5,6 +5,7 @@ DATABASE = 'database.db'
 
 # Initialize app
 app = Flask(__name__)
+# Secret key needed for flash, not very important in this case
 app.secret_key = '12345654321'
 
 # Function to get database
@@ -63,7 +64,7 @@ def add():
         data_tuple = (name, amount, description, warehouse)
 
         # Query database to see if an item already exists in the database
-        # Should only have one entry per time per warehouse
+        # Should only have one entry per item per warehouse
         check_query = """SELECT title FROM entries WHERE title=? AND warehouse_id=? """
         cursor.execute(check_query, (name, warehouse ))
 
@@ -90,6 +91,7 @@ def add():
 
     return render_template("add.html", warehouses=warehouses)
 
+# Route to delete an item from database
 @app.route('/delete', methods=['GET', 'POST'])
 def remove():
     
@@ -100,11 +102,11 @@ def remove():
     if request.method == "POST":
         deletes=request.form.getlist("deletes")
 
-        # If no photos selected to delete, return request url
+        # If no items selected to delete, return request url
         if not deletes:
             return(redirect(request.url))
 
-        # Delete selected images if they exist 
+        # Delete selected items if they exist 
         sqlite_delete_query = """ DELETE FROM entries WHERE title = ? """
         for item in deletes:
             cursor.execute(sqlite_delete_query, (item,))
@@ -113,8 +115,9 @@ def remove():
         return redirect(url_for('index'))
 
 
-    # Modify search_query based on if search exists
-    sqlite_query = """SELECT DISTINCT title, quantity, descript FROM entries"""
+    # Select all items and corresponding warehouses -> main identifiers
+    sqlite_query = """SELECT DISTINCT title, warehouse_name FROM entries
+                        LEFT JOIN warehouses ON entries.warehouse_id=warehouses.warehouse_id"""
     cursor.execute(sqlite_query)
 
     # Get database query results
@@ -123,32 +126,35 @@ def remove():
 
     return render_template("delete.html", records=records)
 
-    
+# Route to edit an existing item
 @app.route('/edit',  methods=['GET', 'PUT', 'POST'])
 def edit():
     db = get_db()
     cursor = db.cursor()
 
+    # Check if URL has arguments that describe which item is being edited
     args = request.args
     if args.get('id'):
+        # Convert ID to number, without end character
         id = args.get('id')[:-1]
-        # Modify search_query based on if search exists
+        # Search query for all info on that item
         sqlite_query = """SELECT id, title, quantity, descript, entries.warehouse_id, warehouse_name FROM entries
                         LEFT JOIN warehouses ON entries.warehouse_id=warehouses.warehouse_id WHERE id=?"""
         cursor.execute(sqlite_query, (id,))
 
-        # Get database query results
+        # Get database query results for the selected item
         entry = cursor.fetchone()
 
-        # Modify search_query based on if search exists
+        # Get warehouses as well for dropdown
         warehouse_query = """SELECT * FROM warehouses"""
         cursor.execute(warehouse_query)
-
-        # Get database query results
         warehouses = cursor.fetchall()
 
+        # Render template for that entry
         return render_template("edit.html", data=entry, warehouses=warehouses)
     
+    # POST method
+    # Case where an edit has been made
     if request.method == "POST":
         # Convert data into tuple format
         id = request.form.get('id')
@@ -157,22 +163,23 @@ def edit():
         description = request.form.get('description')
         warehouse_id = request.form.get('warehouse')
         data_tuple = (name, amount, description, warehouse_id, id,)
-        sqlite_insert_query = """ UPDATE entries SET title = ?, quantity = ?, descript = ?, warehouse_id = ? WHERE id = ?"""
 
         # Insert into database
+        sqlite_insert_query = """ UPDATE entries SET title = ?, quantity = ?, descript = ?, warehouse_id = ? WHERE id = ?"""
         cursor.execute(sqlite_insert_query, data_tuple)
 
         db.commit()
 
     return redirect(url_for('index'))
 
-    
+# Route to manage warehouses
 @app.route('/warehouses', methods=['GET', 'POST'])
 def warehouses():
     db = get_db()
     cursor = db.cursor()
-
+    # Case where a submission has been made via post request
     if request.method == 'POST':
+        # If the post has an ID, it is a deletion
         if request.form.get('id'):
             id = request.form.get('id')
             id = int(id[:-1])
@@ -188,12 +195,12 @@ def warehouses():
             address = request.form.get('address')
             data_tuple = (name, address,)
 
-            # Modify search_query based on if search exists
+            # Check if such a warehouse already exists
             check_query = """SELECT warehouse_name FROM warehouses WHERE warehouse_name=? """
             cursor.execute(check_query, (name,))
-
-            # Get database query results
             entry = cursor.fetchone()
+
+            # If no warehouse exists, insert into database
             if not entry:
                 sqlite_insert_query = """ INSERT INTO warehouses (warehouse_name, warehouse_address) VALUES (?, ?)"""
 
@@ -201,14 +208,13 @@ def warehouses():
                 cursor.execute(sqlite_insert_query, data_tuple)
 
                 db.commit()
+            # Error if exists
             else: 
                 flash("Warehouse already exists")
 
-    # Modify search_query based on if search exists
+    # Get all warehouses and display
     sqlite_query = """SELECT * FROM warehouses"""
     cursor.execute(sqlite_query)
-
-    # Get database query results
     records = cursor.fetchall()
    
     return render_template("warehouses.html", list=records)
