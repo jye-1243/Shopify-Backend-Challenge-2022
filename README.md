@@ -6,7 +6,7 @@ This web app is for a basic database for a logistics company with CRUD functiona
 ## Getting Started
 
 ### Prerequisites
-This project was built using Python3, which can be installed [here](https://www.python.org/downloads/). Once Python is installed, also install the [Flask](https://flask.palletsprojects.com/en/1.1.x/installation/).
+This project was built using Python3, which can be installed [here](https://www.python.org/downloads/). Once Python is installed, also install [Flask](https://flask.palletsprojects.com/en/1.1.x/installation/).
 This project also requires SQLite, which can be installed pursuant to these [instructions](https://www.tutorialspoint.com/sqlite/sqlite_installation.htm)
 
 ### Installation and Deployment
