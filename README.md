@@ -1,5 +1,5 @@
 # Shopify-Backend-Challenge-2022
-Shopify Summer 2022 Backend and Production Internship Challenge
+Shopify Summer 2022 Backend Internship Challenge
 
 This web app is for a basic database for a logistics company with CRUD functionality, and an added function of being able to add warehouses and assign items to various warehouses.
 
